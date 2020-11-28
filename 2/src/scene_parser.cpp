@@ -12,9 +12,7 @@
 #include "plane.h"
 #include "triangle.h"
 #include "transform.h"
-#include <cmath>
 
-#define M_PI 3.1415926536f
 #define DegreesToRadians(x) ((M_PI * x) / 180.0f)
 
 // ====================================================================
