@@ -1,12 +1,12 @@
 #include "camera.h"
 #include "group.h"
 #include "image.h"
+#include "light.h"
 #include "material.h"
 #include "matrix.h"
 #include "object3d.h"
 #include "scene_parser.h"
 #include "sphere.h"
-#include "light.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -28,15 +28,17 @@ Vec3f *map(float depth, float depth_min, float depth_max)
 int main(int argc, char *argv[])
 {
     // input parse
-    char *input_filename = NULL;
+    char input_filename[MAX_PARSER_TOKEN_LENGTH] = "./input_file/";
     int width = 100;
     int height = 100;
-    char *output_filename = NULL;
+    char output_filename[MAX_PARSER_TOKEN_LENGTH] = "./output_file/";
     float depth_min = 0;
     float depth_max = 1;
-    char *depth_filename = NULL;
-    char *normal_filename = NULL;
+    char depth_filename[MAX_PARSER_TOKEN_LENGTH] = "./output_file/";
+    char normal_filename[MAX_PARSER_TOKEN_LENGTH] = "./output_file/";
     bool shade_back = false;
+    bool draw_depth = false;
+    bool draw_normal = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
         {
             i++;
             assert(i < argc);
-            input_filename = argv[i];
+            strcat(input_filename, argv[i]);
         }
         else if (!strcmp(argv[i], "-size"))
         {
@@ -59,7 +61,7 @@ int main(int argc, char *argv[])
         {
             i++;
             assert(i < argc);
-            output_filename = argv[i];
+            strcat(output_filename, argv[i]);
         }
         else if (!strcmp(argv[i], "-depth"))
         {
@@ -71,18 +73,20 @@ int main(int argc, char *argv[])
             depth_max = atof(argv[i]);
             i++;
             assert(i < argc);
-            depth_filename = argv[i];
+            strcat(depth_filename, argv[i]);
+            draw_depth = true;
         }
         else if (!strcmp(argv[i], "-normals"))
         {
             i++;
             assert(i < argc);
-            normal_filename = argv[i];
+            strcat(normal_filename, argv[i]);
+            draw_normal = true;
         }
         else if (!strcmp(argv[i], "-shade_back"))
         {
             i++;
-            assert(i < argc);
+            // assert(i < argc);
             shade_back = true;
         }
         else
@@ -102,13 +106,15 @@ int main(int argc, char *argv[])
     outfile_normal = fopen(normal_filename, "w");
 
     SceneParser sp(input_filename);
-    OrthographicCamera *camera = (OrthographicCamera *)sp.getCamera();
+    // OrthographicCamera *camera = (OrthographicCamera *)sp.getCamera();
+    Camera *camera = (Camera *)sp.getCamera();
     Vec3f background_color(sp.getBackgroundColor());
     Vec3f ambient_color(sp.getAmbientLight());
     Vec3f black(0.0f, 0.0f, 0.0f);
     Group *group = sp.getGroup();
     int nlights = sp.getNumLights();
 
+    // Camera
     // OrthographicCamera
     for (int i = 0; i < height; i++)
     {
@@ -116,13 +122,13 @@ int main(int argc, char *argv[])
         {
             Vec2f pos((float)i / width, (float)j / height);
             Ray ray = camera->generateRay(pos);
-            Hit hit(INF, NULL);
+            Hit hit(INF, NULL, Vec3f(0, 0, 0));
             if (group->intersect(ray, hit, camera->getTMin()))
             {
                 Vec3f color_object(hit.getMaterial()->getDiffuseColor());
                 Vec3f normal(hit.getNormal());
-                Vec3f sum, color_pixel;;
-                if (hit.getNormal().Dot3(ray.getDirection()) > 0 && shade_back) // back side
+                Vec3f sum, color_pixel;
+                if (shade_back && hit.getNormal().Dot3(ray.getDirection()) > 0) // back side
                     normal.Negate();
                 for (int i = 0; i < nlights; i++)
                 {
@@ -130,8 +136,8 @@ int main(int argc, char *argv[])
                     float d;
                     Light *light = sp.getLight(i);
                     light->getIllumination(hit.getIntersectionPoint(), dir_light, color_light);
-                    if (dir_light.Dot3(normal) < 0)
-                        d = - dir_light.Dot3(normal);
+                    if (dir_light.Dot3(normal) > 0)
+                        d = dir_light.Dot3(normal);
                     else
                         d = 0;
                     sum += d * color_light * color_object;
@@ -146,43 +152,48 @@ int main(int argc, char *argv[])
     img.SaveTGA(output_filename);
 
     // Depth visualization
-    for (int i = 0; i < height; i++)
+    if (draw_depth)
     {
-        for (int j = 0; j < width; j++)
+        for (int i = 0; i < height; i++)
         {
-            Vec2f pos((float)i / width, (float)j / height);
-            Ray ray = camera->generateRay(pos);
-            Hit hit(INF, NULL);
-            if (group->intersect(ray, hit, camera->getTMin()))
+            for (int j = 0; j < width; j++)
             {
-                Vec3f color(*map(hit.getT(), depth_min, depth_max));
-                img_depth.SetPixel(i, j, color);
+                Vec2f pos((float)i / width, (float)j / height);
+                Ray ray = camera->generateRay(pos);
+                Hit hit(INF, NULL, Vec3f(0, 0, 0));
+                if (group->intersect(ray, hit, camera->getTMin()))
+                {
+                    Vec3f color(*map(hit.getT(), depth_min, depth_max));
+                    img_depth.SetPixel(i, j, color);
+                }
+                else
+                    img_depth.SetPixel(i, j, black);
             }
-            else
-                img_depth.SetPixel(i, j, black);
         }
+        img_depth.SaveTGA(depth_filename);
     }
-    img_depth.SaveTGA(depth_filename);
 
     // Normal visualization
-    for (int i = 0; i < height; i++)
+    if (draw_normal)
     {
-        for (int j = 0; j < width; j++)
+        for (int i = 0; i < height; i++)
         {
-            Vec2f pos((float)i / width, (float)j / height);
-            Ray ray = camera->generateRay(pos);
-            Hit hit(INF, NULL);
-            if (group->intersect(ray, hit, camera->getTMin()))
+            for (int j = 0; j < width; j++)
             {
-                Vec3f color(hit.getNormal());
-                color.Set(abs(color.r()), abs(color.g()), abs(color.b()));
-                img_depth.SetPixel(i, j, color);
+                Vec2f pos((float)i / width, (float)j / height);
+                Ray ray = camera->generateRay(pos);
+                Hit hit(INF, NULL, Vec3f(0, 0, 0));
+                if (group->intersect(ray, hit, camera->getTMin()))
+                {
+                    Vec3f color(hit.getNormal()); 
+                    color.Set(abs(color.r()), abs(color.g()), abs(color.b()));
+                    img_normal.SetPixel(i, j, color);
+                }
+                else
+                    img_normal.SetPixel(i, j, black);
             }
-            else
-                img_depth.SetPixel(i, j, black);
         }
+        img_normal.SaveTGA(normal_filename);
     }
-    img_normal.SaveTGA(normal_filename);
-
     return 0;
 }

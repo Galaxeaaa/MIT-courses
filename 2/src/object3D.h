@@ -8,9 +8,10 @@
 class Object3D
 {
 public:
-    Object3D() { m = new Material(Vec3f()); };
-    Object3D(const Vec3f &color) { m = new Material(color); };
-    ~Object3D() { delete m; };
+    Object3D() { m = new Material(Vec3f()); }
+    Object3D(const Material *m) : m(new Material(*m)) {}
+    Object3D(const Material &m) : m(new Material(m)) {}
+    ~Object3D() { delete m; }
     virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
 
 protected:

@@ -1,0 +1,1 @@
+g++ ./src/*.cpp -o ./raytracer.exe

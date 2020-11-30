@@ -33,7 +33,7 @@
             "cwd": "${workspaceFolder}",//调试时的工作目录
             "environment": [],//不知道干嘛的
             "internalConsoleOptions": "openOnSessionStart",//
-            "externalConsole": true,//调试时是否显示控制台窗口
+            "externalConsole": false,//调试时是否显示控制台窗口
             "MIMode": "gdb",//指定连接的调试器，可以省略不写
             "miDebuggerPath": "D:/Program Files/mingw64/bin/gdb.exe",//调试器路径,在Linux环境下需要注释掉这一行
             "setupCommands": [ //不知道干嘛的
