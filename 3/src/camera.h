@@ -8,67 +8,61 @@
 class Camera
 {
 public:
-    Camera(){};
-    ~Camera(){};
     virtual Ray generateRay(Vec2f point) = 0;
     virtual float getTMin() const = 0;
+
+    // ====================================================================
+    // dollyCamera, truckCamera, and RotateCamera
+    //
+    // Asumptions:
+    // - up is really up (i.e., it hasn't been changed
+    // to point to "screen up")
+    // - up and direction are normalized
+    // Special considerations:
+    // - If your constructor precomputes any vectors for
+    // use in 'generateRay', you will likely to recompute those
+    // values at athe end of the these three routines
+    // ====================================================================
+    virtual void glInit(int w, int h) = 0;
+    virtual void glPlaceCamera(void) = 0;
+    virtual void dollyCamera(float dist) = 0;
+    virtual void truckCamera(float dx, float dy) = 0;
+    virtual void rotateCamera(float rx, float ry) = 0;
 };
 
 class OrthographicCamera : public Camera
 {
 public:
-    OrthographicCamera(const Vec3f &c, const Vec3f &d, const Vec3f &u, const float &size) : center(c), direction(d), up(u), size(size), tmin(0)
-    {
-        direction.Normalize();
+    OrthographicCamera(const Vec3f &c, const Vec3f &d, const Vec3f &u, const float &size);
+    virtual Ray generateRay(Vec2f point);
+    virtual float getTMin() const { return tmin; }
 
-        up = up - up.Dot3(direction) * direction;
-        up.Normalize();
-
-        Vec3f::Cross3(horizontal, direction, up);
-    }
-    Ray generateRay(Vec2f point)
-    {
-        assert(point.x() >= 0 && point.x() <= 1);
-        assert(point.y() >= 0 && point.y() <= 1);
-
-        Vec3f origin(center + (point.y() - 0.5) * size * up + (point.x() - 0.5) * size * horizontal);
-        Vec3f raydir(direction);
-        Ray r(origin, raydir);
-        return r;
-    }
-    float getTMin() const { return tmin; }
+    virtual void glInit(int w, int h);
+    virtual void glPlaceCamera(void);
+    virtual void dollyCamera(float dist);
+    virtual void truckCamera(float dx, float dy);
+    virtual void rotateCamera(float rx, float ry);
 
 protected:
-    Vec3f center, direction, up, horizontal;
+    Vec3f center, direction, up;
     float size, tmin;
 };
 
 class PerspectiveCamera : public Camera
 {
 public:
-    PerspectiveCamera(Vec3f center, Vec3f direction, Vec3f up, float angle_radians) : center(center), direction(direction), up(up), tmin(0), angle_radians(angle_radians)
-    {
-        up.Normalize();
-        direction.Normalize();
-        Vec3f::Cross3(horizon, direction, up);
-        horizon.Normalize();
-    }
+    PerspectiveCamera(Vec3f center, Vec3f direction, Vec3f up, float angle_radians);
+    virtual Ray generateRay(Vec2f point);
+    virtual float getTMin() const { return tmin; };
 
-    Ray generateRay(Vec2f point)
-    {
-        assert(point.x() >= 0 && point.x() <= 1);
-        assert(point.y() >= 0 && point.y() <= 1);
-
-        Vec3f origin(center);
-        Vec3f raydir(direction + 2 * direction.Length() * tan(angle_radians / 2) * ((point.x() - 0.5) * horizon + (point.y() - 0.5) * up));
-        raydir.Normalize();
-        Ray r(origin, raydir);
-        return r;
-    }
-    float getTMin() const { return tmin; };
+    virtual void glInit(int w, int h);
+    virtual void glPlaceCamera(void);
+    virtual void dollyCamera(float dist);
+    virtual void truckCamera(float dx, float dy);
+    virtual void rotateCamera(float rx, float ry);
 
 protected:
-    Vec3f center, direction, up, horizon;
+    Vec3f center, direction, up;
     float tmin, angle_radians;
 };
 

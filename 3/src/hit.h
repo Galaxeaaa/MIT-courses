@@ -42,6 +42,7 @@ public:
 		t = _t;
 		material = m;
 		normal = n;
+		normal.Normalize();
 		intersectionPoint = ray.pointAtParameter(t);
 	}
 

@@ -25,6 +25,8 @@ Vec3f *map(float depth, float depth_min, float depth_max)
     }
 }
 
+int theta_steps, phi_steps;
+
 int main(int argc, char *argv[])
 {
     // input parse
@@ -39,6 +41,7 @@ int main(int argc, char *argv[])
     bool shade_back = false;
     bool draw_depth = false;
     bool draw_normal = false;
+    bool draw_tessellation = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -88,6 +91,16 @@ int main(int argc, char *argv[])
             i++;
             // assert(i < argc);
             shade_back = true;
+        }
+        else if (!strcmp(argv[i], "-tessellation"))
+        {
+            i++;
+            assert(i < argc);
+            theta_steps = atoi(argv[i]);
+            i++;
+            assert(i < argc);
+            phi_steps = atoi(argv[i]);
+            draw_tessellation = true;
         }
         else
         {
@@ -185,7 +198,7 @@ int main(int argc, char *argv[])
                 Hit hit(INF, NULL, Vec3f(0, 0, 0));
                 if (group->intersect(ray, hit, camera->getTMin()))
                 {
-                    Vec3f color(hit.getNormal()); 
+                    Vec3f color(hit.getNormal());
                     color.Set(abs(color.r()), abs(color.g()), abs(color.b()));
                     img_normal.SetPixel(i, j, color);
                 }

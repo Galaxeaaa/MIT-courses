@@ -1,0 +1,1 @@
+**was adding paint() in class Sphere**

@@ -1,16 +1,22 @@
 #ifndef _SPHERE_H_
 #define _SPHERE_H_
 
+#define _USE_MATH_DEFINES
+#define R2D(angle) angle * M_PI / 180
+
 #include "object3D.h"
 #include <math.h>
 
 using namespace std;
+
+extern int theta_steps, phi_steps;
 
 class Sphere : public Object3D
 {
 public:
 	Sphere(const Vec3f &c, const float &r, Material *m) : Object3D(m), center(c), radius(r) {}
 	~Sphere() {}
+
 	virtual bool intersect(const Ray &r, Hit &h, float tmin)
 	{
 		float _b2, _4ac;
@@ -46,6 +52,30 @@ public:
 		}
 		else
 			return false;
+	}
+
+	virtual void paint() const
+	{
+		float d_theta = 180 / theta_steps;
+		float d_phi = 90 / phi_steps;
+
+		glPushMatrix();
+		glBegin(GL_QUADS);
+		for (int iPhi = -90 + d_phi; iPhi < 90; iPhi += 2 * d_phi)
+		{
+			for (int iTheta = 0; iTheta < 360; iTheta += 2 * d_theta)
+			{
+				// compute appropriate coordinates & normals
+				glNormal3f(radius * cos(iTheta) * cos(iPhi) - center.x(), radius * sin(iPhi) - center.y(), radius * sin(iTheta) * cos(iPhi) - center.z());
+				// send gl vertex commands
+				glVertex3f(center.x() + radius * cos(iTheta + d_theta) * cos(iPhi + d_phi), center.y() + radius * sin(iPhi + d_phi), center.z() + radius * sin(iTheta + d_theta) * cos(iPhi + d_phi));
+				glVertex3f(center.x() + radius * cos(iTheta - d_theta) * cos(iPhi + d_phi), center.y() + radius * sin(iPhi + d_phi), center.z() + radius * sin(iTheta - d_theta) * cos(iPhi + d_phi));
+				glVertex3f(center.x() + radius * cos(iTheta - d_theta) * cos(iPhi - d_phi), center.y() + radius * sin(iPhi - d_phi), center.z() + radius * sin(iTheta - d_theta) * cos(iPhi - d_phi));
+				glVertex3f(center.x() + radius * cos(iTheta + d_theta) * cos(iPhi - d_phi), center.y() + radius * sin(iPhi - d_phi), center.z() + radius * sin(iTheta + d_theta) * cos(iPhi - d_phi));
+			}
+		}
+		glEnd();
+		glPopMatrix();
 	}
 
 protected:
