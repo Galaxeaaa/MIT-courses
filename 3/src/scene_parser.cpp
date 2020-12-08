@@ -461,13 +461,15 @@ Triangle *SceneParser::parseTriangle()
 Group *SceneParser::parseTriangleMesh()
 {
 	char token[MAX_PARSER_TOKEN_LENGTH];
-	char filename[MAX_PARSER_TOKEN_LENGTH];
+	char filename[MAX_PARSER_TOKEN_LENGTH] = "./obj/";
+	char _filename[MAX_PARSER_TOKEN_LENGTH];
 	// get the filename
 	getToken(token);
 	assert(!strcmp(token, "{"));
 	getToken(token);
 	assert(!strcmp(token, "obj_file"));
-	getToken(filename);
+	getToken(_filename);
+	strcat(filename, _filename);
 	getToken(token);
 	assert(!strcmp(token, "}"));
 	const char *ext = &filename[strlen(filename) - 4];

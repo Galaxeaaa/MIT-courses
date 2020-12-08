@@ -6,6 +6,7 @@ class Transform : public Object3D
 {
 public:
     Transform(Matrix &m, Object3D *o) : object(o), mat(m) {}
+
     virtual bool intersect(const Ray &r, Hit &h, float tmin)
     {
         Vec3f Ro = r.getOrigin();
@@ -24,6 +25,16 @@ public:
         h.set(h.getT(), h.getMaterial(), normal, r_transformed);
 
         return isintersect;
+    }
+
+    virtual void paint() const
+    {
+        glPushMatrix();
+        GLfloat *glMatrix = mat.glGet();
+        glMultMatrixf(glMatrix);
+        delete[] glMatrix;
+        object->paint();
+        glPopMatrix();
     }
 
 protected:

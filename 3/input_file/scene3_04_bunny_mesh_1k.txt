@@ -21,7 +21,7 @@ Background {
 
 Materials {
     numMaterials 1
-    Material { diffuseColor 1 1 1 }
+    PhongMaterial { diffuseColor 1 1 1 }
 }
 
 Group {
@@ -31,7 +31,7 @@ Group {
         UniformScale  5
 	Translate  0.03 -0.0666 0 	
         TriangleMesh {
-            obj_file ./obj/bunny_1k.obj
+            obj_file bunny_1k.obj
         }
     }
 }

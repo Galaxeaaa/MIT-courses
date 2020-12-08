@@ -21,8 +21,8 @@ Background {
 
 Materials {
     numMaterials 2
-    Material { diffuseColor 1 0 0 }
-    Material { diffuseColor 0 0 1 }
+    PhongMaterial { diffuseColor 1 0 0 }
+    PhongMaterial { diffuseColor 0 0 1 }
 }
 
 Group {
@@ -40,7 +40,7 @@ Group {
                     ZRotate  45 
                     Scale  1 2 1 
                     TriangleMesh {
-                        obj_file ./obj/cube.obj
+                        obj_file cube.obj
                     }
                 }
             }
@@ -51,7 +51,7 @@ Group {
                     Scale  1 2 1 
                     ZRotate  45 
                     TriangleMesh {
-                        obj_file ./obj/cube.obj
+                        obj_file cube.obj
                     }
                 }
             }

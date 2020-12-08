@@ -32,7 +32,7 @@ protected:
 class PhongMaterial : public Material
 {
 public:
-	PhongMaterial::PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor, float exponent);
+	PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor, float exponent);
 	virtual Material *clone() const;
 
 	virtual Vec3f getSpecularColor() const { return specularColor; }

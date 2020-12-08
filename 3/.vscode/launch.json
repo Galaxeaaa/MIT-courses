@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe",
             "args": [],
-            "stopAtEntry": false,
+            "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
@@ -28,7 +28,7 @@
             "request": "launch",//配置文件的请求类型，有launch和attach两种，具体看官方文档
             "targetArchitecture": "x86_64", //硬件内核架构，为64bit，如图设置
             "program": "${workspaceFolder}/debug.exe",//可执行文件的路径和文件名称
-            "args": ["-input", "scene2_16_t_scale.txt", "-size", "200", "200", "-output", "output2_16.tga", "-depth", "2", "7", "depth2_16.tga"],//主函数调用时传入的参数,,
+            "args": ["-input", "scene3_01_cube_orthographic.txt", "-size", "200", "200", "-output", "output3_01.tga", "-gui"],//主函数调用时传入的参数,,
             "stopAtEntry": false,//设为true时程序将暂停在程序入口处
             "cwd": "${workspaceFolder}",//调试时的工作目录
             "environment": [],//不知道干嘛的

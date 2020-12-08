@@ -3,7 +3,7 @@ OrthographicCamera {
     center 0 0 10 
     direction 0 0 -1  
     up 0 1 0
-    size 5
+    size 2.5
 }
 
 Lights {
@@ -21,7 +21,7 @@ Background {
 
 Materials {
     numMaterials 1
-    Material { 
+    PhongMaterial { 
 	diffuseColor 1 0 0 
     }
 }

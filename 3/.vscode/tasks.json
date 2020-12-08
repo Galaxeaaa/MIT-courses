@@ -13,7 +13,7 @@
                 "-Wall", // 开启额外警告
                 "-static-libgcc", // 静态链接libgcc，一般都会加上
                 "-std=c++17", // C++最新标准为c++17，或根据自己的需要进行修改
-                "-lglut32", //使用glut
+                "-lglut64", //使用glut
                 "-lglu32",
                 "-lopengl32"
             ],
@@ -26,14 +26,22 @@
             "label": "build & debug mutiple files", // 任务名称，与launch.json的preLaunchTask相对应
             "command": "g++", // 要使用的编译器
             "args": [
-                "${file}", //在哪个文件的视图上选择仿真，则选择哪个文件
+                // "${file}", //在哪个文件的视图上选择仿真，则选择哪个文件
                 // "${fileDirname}/*.cpp",
+                "${fileDirname}/main.cpp",
+                "${fileDirname}/camera.cpp",
+                "${fileDirname}/glCanvas.cpp",
                 "${fileDirname}/image.cpp",
+                "${fileDirname}/light.cpp",
+                "${fileDirname}/material.cpp",
                 "${fileDirname}/matrix.cpp",
                 "${fileDirname}/scene_parser.cpp",
                 "-o", // 指定输出文件名，不加该参数则默认输出a.exe，Linux下默认a.out
-                "${fileDirname}/../debug", //选择输出的文件名称，和前面的${file}是对应的，一般默认的名称就是前面的${file}.exe
-                "-g" // 生成和调试有关的信息
+                "${workspaceFolder}/debug", //选择输出的文件名称，和前面的${file}是对应的，一般默认的名称就是前面的${file}.exe
+                "-g", // 生成和调试有关的信息
+                "-lglut64",
+                "-lglu32",
+                "-lopengl32",
                 // "-Wall" // 开启额外警告
             ], // 编译命令参数
             "type": "shell", // 可以为shell或process，前者相当于先打开shell再输入命令，后者是直接运行命令

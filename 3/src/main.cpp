@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     bool draw_depth = false;
     bool draw_normal = false;
     bool draw_tessellation = false;
+    bool gui = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -102,6 +103,12 @@ int main(int argc, char *argv[])
             phi_steps = atoi(argv[i]);
             draw_tessellation = true;
         }
+        else if (!strcmp(argv[i], "-gui"))
+        {
+            i++;
+            // assert(i < argc);
+            gui = true;
+        }
         else
         {
             printf("whoops error with command line argument %d: '%s'\n", i, argv[i]);
@@ -148,7 +155,8 @@ int main(int argc, char *argv[])
                     Vec3f color_light, dir_light;
                     float d;
                     Light *light = sp.getLight(i);
-                    light->getIllumination(hit.getIntersectionPoint(), dir_light, color_light);
+                    float distance_to_light = 1.0;
+                    light->getIllumination(hit.getIntersectionPoint(), dir_light, color_light, distance_to_light);
                     if (dir_light.Dot3(normal) > 0)
                         d = dir_light.Dot3(normal);
                     else
