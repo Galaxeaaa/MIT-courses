@@ -1,7 +1,8 @@
 # NOTEs
 
 ## TODO
-camera set is seriously incorrect(when u move camera) **fix it !**
+
+
 
 ## What have i learned
 

@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <algorithm>
 #include <math.h>
 
 PhongMaterial::PhongMaterial::PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor, float exponent) : Material(diffuseColor), specularColor(specularColor), exponent(exponent)
@@ -17,9 +18,9 @@ Vec3f PhongMaterial::Shade(const Ray &ray, const Hit &hit, const Vec3f &dirToLig
     Vec3f v = -1.0 * ray.getDirection();
     Vec3f n(hit.getNormal());
     Vec3f h(l + v);
-    h /= (l + v).Length();
+    h.Normalize();
 
-    Vec3f Lo = (diffuse_color * (n.Dot3(l)) + specular_color * pow(n.Dot3(h), exponent)) * lightColor;
+    Vec3f Lo = (diffuse_color * max(n.Dot3(l), 0.0f) + specular_color * pow(n.Dot3(h), exponent) * max(n.Dot3(l), 0.0f)) * lightColor;
 
     return Lo;
 }

@@ -81,11 +81,7 @@ void renderFunc()
                     Light *light = sp->getLight(i);
                     float distance_to_light = 1.0;
                     light->getIllumination(hit.getIntersectionPoint(), dir_light, color_light, distance_to_light);
-                    if (dir_light.Dot3(normal) > 0)
-                        d = dir_light.Dot3(normal);
-                    else
-                        d = 0;
-                    sum += d * color_light * color_object;
+                    sum += hit.getMaterial()->Shade(ray, hit, dir_light, color_light);
                 }
                 color_pixel = ambient_color * color_object + sum;
                 img.SetPixel(i, j, color_pixel);
