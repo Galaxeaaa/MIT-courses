@@ -6,9 +6,18 @@
 #include "vectors.h"
 
 // ====================================================================
+// OPTIONAL: 3 pass rendering to fix the specular highlight 
+// artifact for small specular exponents (wide specular lobe)
 // ====================================================================
 
-// You will extend this class in later assignments
+// include glCanvas.h to access the preprocessor variable SPECULAR_FIX
+#include "glCanvas.h"  
+
+#ifdef SPECULAR_FIX
+// OPTIONAL:  global variable allows (hacky) communication 
+// with glCanvas::display
+extern int SPECULAR_FIX_WHICH_PASS;
+#endif
 
 class Material
 {
@@ -35,7 +44,8 @@ public:
 	PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor, float exponent);
 	virtual Material *clone() const;
 
-	virtual Vec3f getSpecularColor() const { return specularColor; }
+	Vec3f getSpecularColor() const { return specularColor; }
+	float getExponent() const { return exponent; }
 	virtual Vec3f Shade(const Ray &ray, const Hit &hit, const Vec3f &dirToLight, const Vec3f &lightColor) const;
 	virtual void glSetMaterial(void) const;
 

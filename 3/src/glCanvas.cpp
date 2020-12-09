@@ -15,7 +15,7 @@
 
 // A reference to the function that performs the raytracing
 // This function will get called from the 'keyboard' routine
-void (*GLCanvas::renderFunction)(void);
+void (*GLCanvas::renderFunction)();
 
 // A pointer to the global SceneParser
 SceneParser *GLCanvas::scene;
@@ -24,6 +24,8 @@ SceneParser *GLCanvas::scene;
 int GLCanvas::mouseButton;
 int GLCanvas::mouseX;
 int GLCanvas::mouseY;
+
+extern int width, height;
 
 // ========================================================
 // ========================================================
@@ -44,7 +46,7 @@ void GLCanvas::drawAxes(void)
 	glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
-	glVertex3f(1, 0, 0);
+	glVertex3f(10, 0, 0);
 	glEnd();
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex3f(1.0, 0.0, 0.0);
@@ -59,7 +61,7 @@ void GLCanvas::drawAxes(void)
 	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
-	glVertex3f(0, 1, 0);
+	glVertex3f(0, 10, 0);
 	glEnd();
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex3f(0.0, 1.0, 0.0);
@@ -74,7 +76,7 @@ void GLCanvas::drawAxes(void)
 	glColor3f(0.0, 0.0, 1.0);
 	glBegin(GL_LINES);
 	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 1);
+	glVertex3f(0, 0, 10);
 	glEnd();
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex3f(0.0, 0.0, 1.0);
@@ -118,39 +120,39 @@ void GLCanvas::display(void)
 		scene->getLight(i)->glInit(i);
 	}
 
-#if !SPECULAR_FIX
+	#if !SPECULAR_FIX
 
-	// DEFAULT: single pass rendering
-	// Draw the scene once
-	SPECULAR_FIX_WHICH_PASS = 0;
-	scene->getGroup()->paint();
+		// DEFAULT: single pass rendering
+		// Draw the scene once
+		SPECULAR_FIX_WHICH_PASS = 0;
+		scene->getGroup()->paint();
 
-#else
+	#else
 
-	// OPTIONAL: 3 pass rendering to fix the specular highlight
-	// artifact for small specular exponents (wide specular lobe)
+		// OPTIONAL: 3 pass rendering to fix the specular highlight
+		// artifact for small specular exponents (wide specular lobe)
 
-	// First pass, draw the specular highlights
-	SPECULAR_FIX_WHICH_PASS = 0;
-	scene->getGroup()->paint();
+		// First pass, draw the specular highlights
+		SPECULAR_FIX_WHICH_PASS = 0;
+		scene->getGroup()->paint();
 
-	glDepthFunc(GL_EQUAL);
-	glEnable(GL_BLEND);
+		glDepthFunc(GL_EQUAL);
+		glEnable(GL_BLEND);
 
-	// Second pass, multiply specular highlights by normal dot light
-	SPECULAR_FIX_WHICH_PASS = 1;
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
-	scene->getGroup()->paint();
+		// Second pass, multiply specular highlights by normal dot light
+		SPECULAR_FIX_WHICH_PASS = 1;
+		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		scene->getGroup()->paint();
 
-	// Third pass, add diffuse & ambient components
-	SPECULAR_FIX_WHICH_PASS = 2;
-	glBlendFunc(GL_ONE, GL_ONE);
-	scene->getGroup()->paint();
+		// Third pass, add diffuse & ambient components
+		SPECULAR_FIX_WHICH_PASS = 2;
+		glBlendFunc(GL_ONE, GL_ONE);
+		scene->getGroup()->paint();
 
-	glDepthFunc(GL_LESS);
-	glDisable(GL_BLEND);
+		glDepthFunc(GL_LESS);
+		glDisable(GL_BLEND);
 
-#endif
+	#endif
 
 	// Swap the back buffer with the front buffer to display the scene
 	glutSwapBuffers();
@@ -252,27 +254,23 @@ void GLCanvas::keyboard(unsigned char key, int x, int y)
 // by calling 'exit(0)'
 // ========================================================
 
-void GLCanvas::initialize(SceneParser *_scene, void (*_renderFunction)(void))
+void GLCanvas::initialize(SceneParser *_scene, void (*_renderFunction)())
 {
 	scene = _scene;
 	renderFunction = _renderFunction;
 
-	// Set global lighting parameters
-	glEnable(GL_LIGHTING);
-	glShadeModel(GL_SMOOTH);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-
-	// Set window parameters
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
-	glEnable(GL_DEPTH_TEST);
-	// OPTIONAL: If you'd like to set the window size from
-	// the command line, do that here
-	glutInitWindowSize(400, 400);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitWindowSize(500, 500);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("OpenGL Viewer");
 
+	glEnable(GL_LIGHTING);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	// glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_NORMALIZE);
+	glShadeModel(GL_SMOOTH);
 
 	// Ambient light
 	Vec3f ambColor = scene->getAmbientLight();

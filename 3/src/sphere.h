@@ -1,15 +1,16 @@
 #ifndef _SPHERE_H_
 #define _SPHERE_H_
 
-#define _USE_MATH_DEFINES
-#define R2D(angle) angle * M_PI / 180
-
 #include "object3D.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
+
+#define R2D(angle) ((angle)*M_PI / 180)
 
 using namespace std;
 
 extern int theta_steps, phi_steps;
+extern bool gouraud;
 
 class Sphere : public Object3D
 {
@@ -56,25 +57,55 @@ public:
 
 	virtual void paint() const
 	{
-		float d_theta = 180 / theta_steps;
-		float d_phi = 90 / phi_steps;
+		float d_theta = R2D(180 / theta_steps);
+		float d_phi = R2D(90 / phi_steps);
 
 		glPushMatrix();
+		m->glSetMaterial();
+		glTranslatef(center.x(), center.y(), center.z());
+
 		glBegin(GL_QUADS);
-		for (int iPhi = -90 + d_phi; iPhi < 90; iPhi += 2 * d_phi)
+		for (float iPhi = -R2D(90) + d_phi; iPhi < R2D(90); iPhi += 2 * d_phi)
 		{
-			for (int iTheta = 0; iTheta < 360; iTheta += 2 * d_theta)
+			for (float iTheta = 0; iTheta < R2D(360); iTheta += 2 * d_theta)
 			{
-				// compute appropriate coordinates & normals
-				glNormal3f(radius * cos(iTheta) * cos(iPhi) - center.x(), radius * sin(iPhi) - center.y(), radius * sin(iTheta) * cos(iPhi) - center.z());
-				// send gl vertex commands
-				glVertex3f(center.x() + radius * cos(iTheta + d_theta) * cos(iPhi + d_phi), center.y() + radius * sin(iPhi + d_phi), center.z() + radius * sin(iTheta + d_theta) * cos(iPhi + d_phi));
-				glVertex3f(center.x() + radius * cos(iTheta - d_theta) * cos(iPhi + d_phi), center.y() + radius * sin(iPhi + d_phi), center.z() + radius * sin(iTheta - d_theta) * cos(iPhi + d_phi));
-				glVertex3f(center.x() + radius * cos(iTheta - d_theta) * cos(iPhi - d_phi), center.y() + radius * sin(iPhi - d_phi), center.z() + radius * sin(iTheta - d_theta) * cos(iPhi - d_phi));
-				glVertex3f(center.x() + radius * cos(iTheta + d_theta) * cos(iPhi - d_phi), center.y() + radius * sin(iPhi - d_phi), center.z() + radius * sin(iTheta + d_theta) * cos(iPhi - d_phi));
+				float cos_theta_p = cos(iTheta + d_theta);
+				float cos_theta_m = cos(iTheta - d_theta);
+				float sin_theta_p = sin(iTheta + d_theta);
+				float sin_theta_m = sin(iTheta - d_theta);
+				float cos_phi_p = cos(iPhi + d_phi);
+				float cos_phi_m = cos(iPhi - d_phi);
+				float sin_phi_p = sin(iPhi + d_phi);
+				float sin_phi_m = sin(iPhi - d_phi);
+
+				if (gouraud)
+				{
+					glNormal3f(-(radius * cos_theta_p * cos_phi_p), -(radius * sin_phi_p), -(radius * sin_theta_p * cos_phi_p));
+					glVertex3f(radius * cos_theta_p * cos_phi_p, radius * sin_phi_p, radius * sin_theta_p * cos_phi_p);
+
+					glNormal3f(-(radius * cos_theta_m * cos_phi_p), -(radius * sin_phi_p), -(radius * sin_theta_m * cos_phi_p));
+					glVertex3f(radius * cos_theta_m * cos_phi_p, radius * sin_phi_p, radius * sin_theta_m * cos_phi_p);
+
+					glNormal3f(-(radius * cos_theta_m * cos_phi_m), -(radius * sin_phi_m), -(radius * sin_theta_m * cos_phi_m));
+					glVertex3f(radius * cos_theta_m * cos_phi_m, radius * sin_phi_m, radius * sin_theta_m * cos_phi_m);
+
+					glNormal3f(-(radius * cos_theta_p * cos_phi_m), -(radius * sin_phi_m), -(radius * sin_theta_p * cos_phi_m));
+					glVertex3f(radius * cos_theta_p * cos_phi_m, radius * sin_phi_m, radius * sin_theta_p * cos_phi_m);
+				}
+				else
+				{
+					// compute appropriate coordinates & normals
+					glNormal3f(-radius * cos(iTheta) * cos(iPhi), -radius * sin(iPhi), -radius * sin(iTheta) * cos(iPhi));
+					// send gl vertex commands
+					glVertex3f(radius * cos_theta_p * cos_phi_p, radius * sin_phi_p, radius * sin_theta_p * cos_phi_p);
+					glVertex3f(radius * cos_theta_m * cos_phi_p, radius * sin_phi_p, radius * sin_theta_m * cos_phi_p);
+					glVertex3f(radius * cos_theta_m * cos_phi_m, radius * sin_phi_m, radius * sin_theta_m * cos_phi_m);
+					glVertex3f(radius * cos_theta_p * cos_phi_m, radius * sin_phi_m, radius * sin_theta_p * cos_phi_m);
+				}
 			}
 		}
 		glEnd();
+		// glutSolidSphere(radius, 32, 32);
 		glPopMatrix();
 	}
 

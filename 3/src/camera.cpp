@@ -86,6 +86,7 @@ void OrthographicCamera::rotateCamera(float rx, float ry)
 PerspectiveCamera::PerspectiveCamera(Vec3f center, Vec3f direction, Vec3f up, float angle_radians) : center(center), direction(direction), up(up), tmin(0), angle_radians(angle_radians)
 {
     up.Normalize();
+    up = up - up.Dot3(direction) * direction;
     direction.Normalize();
 }
 

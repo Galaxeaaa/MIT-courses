@@ -22,7 +22,7 @@ Background {
 Materials {
     numMaterials 1
     PhongMaterial {	
-        diffuseColor 1 0 0 
+        diffuseColor 1 0 0
     }
 }
 

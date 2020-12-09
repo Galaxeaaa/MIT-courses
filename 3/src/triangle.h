@@ -48,8 +48,15 @@ public:
 
 	virtual void paint() const
 	{
+		m->glSetMaterial();
+
+		Vec3f normal;
+		Vec3f::Cross3(normal, a - b, b - c);
+		normal.Normalize();
+
 		glPushMatrix();
 		glBegin(GL_TRIANGLES);
+		glNormal3f(normal.x(), normal.y(), normal.z());
 		glVertex3f(a.x(), a.y(), a.z());
 		glVertex3f(b.x(), b.y(), b.z());
 		glVertex3f(c.x(), c.y(), c.z());
