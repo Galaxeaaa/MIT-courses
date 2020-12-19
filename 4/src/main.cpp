@@ -45,7 +45,7 @@ bool gui = false;
 bool gouraud = false;
 bool shadows = false;
 int bounces = 0;
-float weight = 0;
+float cutoff_weight = 0;
 SceneParser *sp;
 
 void renderFunc()
@@ -72,8 +72,8 @@ void renderFunc()
             Vec2f pos((float)i / width, (float)j / height);
             Ray ray = camera->generateRay(pos);
             Hit hit(INF, NULL, Vec3f(0, 0, 0), ray);
-            RayTracer rt(sp, bounces, weight, shadows);
-            Vec3f color = rt.traceRay(ray, INF, bounces, weight, 1, hit);
+            RayTracer rt(sp, bounces, cutoff_weight, shadows);
+            Vec3f color = rt.traceRay(ray, INF, bounces, 1, 1, hit);
             img.SetPixel(i, j, color);
         }
     }
@@ -139,8 +139,8 @@ void traceRayFunc(float x, float y)
     Vec2f pos((float)x, (float)y);
     Ray ray = camera->generateRay(pos);
     Hit hit(INF, NULL, Vec3f(), ray);
-    RayTracer rt(sp, bounces, weight, shadows);
-    rt.traceRay(ray, INF, bounces, weight, 1, hit);
+    RayTracer rt(sp, bounces, cutoff_weight, shadows);
+    rt.traceRay(ray, INF, bounces, 1, 1, hit);
     RayTree::paint();
 }
 
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[i], "-weight"))
         {
             i++;
-            weight = atof(argv[i]);
+            cutoff_weight = atof(argv[i]);
         }
         else
         {

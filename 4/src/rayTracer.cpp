@@ -11,7 +11,7 @@
 #define EPSILON 0.001
 
 RayTracer::RayTracer(SceneParser *s, int max_bounces, float cutoff_weight, bool shadows)
-    : s(s), shadows(shadows)
+    : s(s), max_bounces(max_bounces), cutoff_weight(cutoff_weight), shadows(shadows)
 {
 }
 
@@ -21,8 +21,14 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
     {
         return Vec3f();
     }
+    else if (weight < cutoff_weight)
+    {
+        return Vec3f();
+    }
     else if (s->getGroup()->intersect(ray, hit, EPSILON))
     {
+        Ray n(hit.getIntersectionPoint(), hit.getNormal());
+        RayTree::AddShadowSegment(n, 0, 1);
         Vec3f color = s->getAmbientLight() * hit.getMaterial()->getDiffuseColor();
         /* Shadowing */
         if (shadows)
@@ -49,16 +55,7 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
             {
                 Ray ray3(hit.getIntersectionPoint(), mirrorDirection(hit.getNormal(), ray.getDirection())); // CAN BE MORE REALISTIC
                 Hit hit3(INF, NULL, Vec3f(), ray3);
-                if (s->getGroup()->intersect(ray3, hit3, EPSILON))
-                {
-                    color += traceRay(ray3, tmin, bounces - 1, weight, indexOfRefraction, hit3) * ((PhongMaterial *)hit.getMaterial())->getReflectiveColor();
-                }
-                else
-                {
-                    color += s->getBackgroundColor() * ((PhongMaterial *)hit.getMaterial())->getReflectiveColor();
-                }
-                Ray n(hit.getIntersectionPoint(), hit.getNormal());
-                RayTree::AddShadowSegment(n, 0, 1);
+                color += traceRay(ray3, tmin, bounces - 1, weight * ((PhongMaterial *)hit.getMaterial())->getReflectiveColor().Length(), indexOfRefraction, hit3) * ((PhongMaterial *)hit.getMaterial())->getReflectiveColor();
                 RayTree::AddReflectedSegment(ray3, 0, hit3.getT());
             }
             /* Transmitting */
@@ -77,21 +74,19 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
                     transmittedDirection(hit.getNormal(), ray.getDirection(), indexOfRefraction, 1, ray4_dir);
                     next_index = 1;
                 }
-                Ray ray4(hit.getIntersectionPoint(), ray4_dir);
-                Hit hit4(INF, NULL, Vec3f(), ray4);
-                if (s->getGroup()->intersect(ray4, hit4, EPSILON))
+                if (ray4_dir != Vec3f())
                 {
-                    color += traceRay(ray4, tmin, bounces - 1, weight, next_index, hit4) * ((PhongMaterial *)hit.getMaterial())->getTransparentColor();
+                    Ray ray4(hit.getIntersectionPoint(), ray4_dir);
+                    Hit hit4(INF, NULL, Vec3f(), ray4);
+                    color += traceRay(ray4, tmin, bounces - 1, weight * ((PhongMaterial *)hit.getMaterial())->getTransparentColor().Length(), next_index, hit4) * ((PhongMaterial *)hit.getMaterial())->getTransparentColor();
+                    RayTree::AddTransmittedSegment(ray4, 0, hit4.getT());
                 }
-                else
-                {
-                    color += s->getBackgroundColor() * ((PhongMaterial *)hit.getMaterial())->getTransparentColor();
-                }
-                RayTree::AddTransmittedSegment(ray4, 0, hit4.getT());
             }
         }
 
-        RayTree::SetMainSegment(ray, 0, hit.getT());
+        if (bounces == max_bounces)
+            RayTree::SetMainSegment(ray, 0, hit.getT());
+
         return color;
     }
     else
@@ -107,16 +102,18 @@ Vec3f RayTracer::mirrorDirection(const Vec3f &normal, const Vec3f &incoming)
 
 void RayTracer::transmittedDirection(const Vec3f &normal, const Vec3f &incoming, float index_i, float index_t, Vec3f &transmitted)
 {
-    if (1 - (index_i / index_t) * (index_i / index_t) * (1 - (normal.Dot3(-1 * incoming)) * (normal.Dot3(-1 * incoming))) < 0)
+    Vec3f N(normal), I(incoming);
+    N.Normalize();
+    I.Normalize();
+
+    if (1 - (index_i / index_t) * (index_i / index_t) * (1 - (N.Dot3(-1 * I)) * (N.Dot3(-1 * I))) < 0)
     {
         transmitted = Vec3f();
     }
-    else if (incoming.Dot3(normal) < 0)
-    {
-        transmitted = (index_i / index_t * (normal.Dot3(-1 * incoming)) - sqrt(1 - (index_i / index_t) * (index_i / index_t) * (1 - (normal.Dot3(-1 * incoming)) * (normal.Dot3(-1 * incoming))))) * normal + index_i / index_t * incoming;
-    }
     else
     {
-        transmitted = (index_i / index_t * (normal.Dot3(-1 * incoming)) + sqrt(1 - (index_i / index_t) * (index_i / index_t) * (1 - (normal.Dot3(-1 * incoming)) * (normal.Dot3(-1 * incoming))))) * normal + index_i / index_t * incoming;
+        if (I.Dot3(N) > 0)
+            N.Negate();
+        transmitted = (index_i / index_t * (N.Dot3(-1 * I)) - sqrt(1 - (index_i / index_t) * (index_i / index_t) * (1 - (N.Dot3(-1 * I)) * (N.Dot3(-1 * I))))) * N + index_i / index_t * I;
     }
 }

@@ -20,6 +20,8 @@ PhongMaterial::PhongMaterial::PhongMaterial(const Vec3f &diffuseColor,
 {
 }
 
+extern bool shade_back;
+
 Vec3f PhongMaterial::Shade(const Ray &ray, const Hit &hit, const Vec3f &dirToLight, const Vec3f &lightColor) const
 {
     PhongMaterial *m = (PhongMaterial *)hit.getMaterial();
@@ -30,6 +32,11 @@ Vec3f PhongMaterial::Shade(const Ray &ray, const Hit &hit, const Vec3f &dirToLig
     Vec3f n(hit.getNormal());
     Vec3f h(l + v);
     h.Normalize();
+
+    if (n.Dot3(v) < 0 && shade_back)
+    {
+        n.Negate();
+    }
 
     Vec3f Lo = (diffuse_color * max(n.Dot3(l), 0.0f) + specular_color * pow(n.Dot3(h), exponent) * max(n.Dot3(l), 0.0f)) * lightColor;
 
