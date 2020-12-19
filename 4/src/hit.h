@@ -15,11 +15,12 @@ class Hit
 public:
 	// CONSTRUCTOR & DESTRUCTOR
 	Hit() { material = NULL; }
-	Hit(float _t, Material *m, Vec3f n)
+	Hit(float _t, Material *m, Vec3f n, const Ray &ray)
 	{
 		t = _t;
 		material = m;
 		normal = n;
+		intersectionPoint = ray.pointAtParameter(t);
 	}
 	Hit(const Hit &h)
 	{

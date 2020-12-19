@@ -36,6 +36,8 @@
                 "${fileDirname}/material.cpp",
                 "${fileDirname}/matrix.cpp",
                 "${fileDirname}/scene_parser.cpp",
+                "${fileDirname}/rayTracer.cpp",
+                "${fileDirname}/rayTree.cpp",
                 "-o", // 指定输出文件名，不加该参数则默认输出a.exe，Linux下默认a.out
                 "${workspaceFolder}/debug", //选择输出的文件名称，和前面的${file}是对应的，一般默认的名称就是前面的${file}.exe
                 "-g", // 生成和调试有关的信息

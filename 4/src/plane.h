@@ -3,7 +3,7 @@
 #include "object3D.h"
 #include <math.h>
 
-#define BIG 10e5
+#define BIG 10e4
 
 using namespace std;
 
@@ -26,7 +26,7 @@ public:
         if (t >= tmin)
         {
             if (t < h.getT())
-                h.set(t, m, normal, r);
+                h.set(t, m->clone(), normal, r);
             return true;
         }
         else

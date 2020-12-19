@@ -39,7 +39,7 @@ public:
 		if (beta + gamma < 1 && beta > 0 && gamma > 0 && t >= tmin)
 		{
 			if (t < h.getT())
-				h.set(t, m, normal, r);
+				h.set(t, m->clone(), normal, r);
 			return true;
 		}
 		else

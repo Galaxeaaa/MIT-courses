@@ -30,8 +30,12 @@ class GLCanvas
 
 private:
 	// A reference to the function that performs the raytracing
-	// This gets called from the 'keyboard' rotine
-	static void (*renderFunction)();
+	// This gets called from the 'keyboard' routine
+	static void (*renderFunction)(void);
+
+	// A reference to the function that traces the ray tree for a single pixel
+	// This gets called from the 'keyboard' routine
+	static void (*traceRayFunction)(float, float);
 
 	// A pointer to the global SceneParser
 	static SceneParser *scene;
@@ -50,20 +54,21 @@ private:
 	static void mouse(int button, int state, int x, int y);
 	static void motion(int x, int y);
 	static void keyboard(unsigned char key, int x, int y);
-	static void idle();
 
 public:
 	// Constructor and destructor
 	GLCanvas(void)
 	{
 		renderFunction = NULL;
+		traceRayFunction = NULL;
 	}
 	~GLCanvas(void) {}
 
 	// Set up the canvas and enter the rendering loop
 	// Note that this function will not return but can be
 	// terminated by calling 'exit(0)'
-	void initialize(SceneParser *_scene, void (*_renderFunction)());
+
+	void initialize(SceneParser *_scene, void (*_renderFunction)(void), void (*_traceRayFunction)(float, float));
 };
 
 // ====================================================================

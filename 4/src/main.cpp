@@ -6,6 +6,8 @@
 #include "material.h"
 #include "matrix.h"
 #include "object3d.h"
+#include "rayTracer.h"
+#include "rayTree.h"
 #include "scene_parser.h"
 #include "sphere.h"
 #include <fstream>
@@ -26,7 +28,7 @@ Vec3f *map(float depth, float depth_min, float depth_max)
     }
 }
 
-int theta_steps, phi_steps;
+int theta_steps = 20, phi_steps = 20;
 char input_filename[MAX_PARSER_TOKEN_LENGTH] = "./input_file/";
 int width = 100;
 int height = 100;
@@ -41,6 +43,9 @@ bool draw_normal = false;
 bool draw_tessellation = false;
 bool gui = false;
 bool gouraud = false;
+bool shadows = false;
+int bounces = 0;
+float weight = 0;
 SceneParser *sp;
 
 void renderFunc()
@@ -66,28 +71,10 @@ void renderFunc()
         {
             Vec2f pos((float)i / width, (float)j / height);
             Ray ray = camera->generateRay(pos);
-            Hit hit(INF, NULL, Vec3f(0, 0, 0));
-            if (group->intersect(ray, hit, camera->getTMin()))
-            {
-                Vec3f color_object(hit.getMaterial()->getDiffuseColor());
-                Vec3f normal(hit.getNormal());
-                Vec3f sum, color_pixel;
-                if (shade_back && hit.getNormal().Dot3(ray.getDirection()) > 0) // back side
-                    normal.Negate();
-                for (int i = 0; i < nlights; i++)
-                {
-                    Vec3f color_light, dir_light;
-                    float d;
-                    Light *light = sp->getLight(i);
-                    float distance_to_light = 1.0;
-                    light->getIllumination(hit.getIntersectionPoint(), dir_light, color_light, distance_to_light);
-                    sum += hit.getMaterial()->Shade(ray, hit, dir_light, color_light);
-                }
-                color_pixel = ambient_color * color_object + sum;
-                img.SetPixel(i, j, color_pixel);
-            }
-            else
-                img.SetPixel(i, j, background_color);
+            Hit hit(INF, NULL, Vec3f(0, 0, 0), ray);
+            RayTracer rt(sp, bounces, weight, shadows);
+            Vec3f color = rt.traceRay(ray, INF, bounces, weight, 1, hit);
+            img.SetPixel(i, j, color);
         }
     }
     img.SaveTGA(output_filename);
@@ -102,7 +89,7 @@ void renderFunc()
             {
                 Vec2f pos((float)i / width, (float)j / height);
                 Ray ray = camera->generateRay(pos);
-                Hit hit(INF, NULL, Vec3f(0, 0, 0));
+                Hit hit(INF, NULL, Vec3f(0, 0, 0), ray);
                 if (group->intersect(ray, hit, camera->getTMin()))
                 {
                     Vec3f color(*map(hit.getT(), depth_min, depth_max));
@@ -125,7 +112,7 @@ void renderFunc()
             {
                 Vec2f pos((float)i / width, (float)j / height);
                 Ray ray = camera->generateRay(pos);
-                Hit hit(INF, NULL, Vec3f(0, 0, 0));
+                Hit hit(INF, NULL, Vec3f(0, 0, 0), ray);
                 if (group->intersect(ray, hit, camera->getTMin()))
                 {
                     Vec3f color(hit.getNormal());
@@ -140,10 +127,26 @@ void renderFunc()
     }
 }
 
+void traceRayFunc(float x, float y)
+{
+    Camera *camera = (Camera *)sp->getCamera();
+    Vec3f background_color(sp->getBackgroundColor());
+    Vec3f ambient_color(sp->getAmbientLight());
+    Vec3f black(0.0f, 0.0f, 0.0f);
+    Group *group = sp->getGroup();
+    int nlights = sp->getNumLights();
+
+    Vec2f pos((float)x, (float)y);
+    Ray ray = camera->generateRay(pos);
+    Hit hit(INF, NULL, Vec3f(), ray);
+    RayTracer rt(sp, bounces, weight, shadows);
+    rt.traceRay(ray, INF, bounces, weight, 1, hit);
+    RayTree::paint();
+}
+
 int main(int argc, char *argv[])
 {
-    // input parse
-
+    /* input parse */
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-input"))
@@ -209,6 +212,20 @@ int main(int argc, char *argv[])
         {
             gouraud = true;
         }
+        else if (!strcmp(argv[i], "-shadows"))
+        {
+            shadows = true;
+        }
+        else if (!strcmp(argv[i], "-bounces"))
+        {
+            i++;
+            bounces = atoi(argv[i]);
+        }
+        else if (!strcmp(argv[i], "-weight"))
+        {
+            i++;
+            weight = atof(argv[i]);
+        }
         else
         {
             printf("whoops error with command line argument %d: '%s'\n", i, argv[i]);
@@ -220,9 +237,14 @@ int main(int argc, char *argv[])
     infile = fopen(input_filename, "r");
 
     sp = new SceneParser(input_filename);
-	glutInit(&argc, argv);
-    GLCanvas canvas;
-    canvas.initialize(sp, renderFunc);
+    renderFunc();
+
+    if (gui)
+    {
+        glutInit(&argc, argv);
+        GLCanvas canvas;
+        canvas.initialize(sp, renderFunc, traceRayFunc);
+    }
     // OrthographicCamera *camera = (OrthographicCamera *)sp->getCamera();
 
     return 0;

@@ -5,7 +5,18 @@
 #include <algorithm>
 #include <math.h>
 
-PhongMaterial::PhongMaterial::PhongMaterial(const Vec3f &diffuseColor, const Vec3f &specularColor, float exponent) : Material(diffuseColor), specularColor(specularColor), exponent(exponent)
+PhongMaterial::PhongMaterial::PhongMaterial(const Vec3f &diffuseColor,
+                                            const Vec3f &specularColor,
+                                            float exponent,
+                                            const Vec3f &reflectiveColor,
+                                            const Vec3f &transparentColor,
+                                            float indexOfRefraction)
+    : Material(diffuseColor),
+      specularColor(specularColor),
+      exponent(exponent),
+      reflectiveColor(reflectiveColor),
+      transparentColor(transparentColor),
+      indexOfRefraction(indexOfRefraction)
 {
 }
 

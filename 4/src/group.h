@@ -8,6 +8,8 @@ class Group : public Object3D
 public:
     Group(int n) : n(n) { instances = new Object3D *[n]; }
 
+    int getN() { return n; }
+
     virtual bool intersect(const Ray &r, Hit &h, float tmin)
     {
         bool is = false;
