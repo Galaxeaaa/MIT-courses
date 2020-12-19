@@ -30,11 +30,13 @@ Group {
     numObjects 1
     MaterialIndex 0
     Transform {
-        ZRotate  45 
-        Scale  1 0.2 1 
-        Sphere {
-	    center 0 0 0 
-            radius 1 
+        ZRotate  45
+        Transform {
+            Scale  1 0.2 1 
+            Sphere {
+            center 0 0 0 
+                radius 1 
+            }
         }
     }
 }

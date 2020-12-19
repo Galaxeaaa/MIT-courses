@@ -74,8 +74,8 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
                 }
                 else
                 {
-                    transmittedDirection(hit.getNormal(), ray.getDirection(), index, indexOfRefraction, ray4_dir);
-                    next_index = indexOfRefraction;
+                    transmittedDirection(hit.getNormal(), ray.getDirection(), indexOfRefraction, 1, ray4_dir);
+                    next_index = 1;
                 }
                 Ray ray4(hit.getIntersectionPoint(), ray4_dir);
                 Hit hit4(INF, NULL, Vec3f(), ray4);

@@ -20,23 +20,23 @@ public:
         cp.TransformDirection(Rd);
         // Rd.Normalize();
         cp.Transpose();
-        // q.emplace(cp);
+        q.emplace(cp);
         Ray r_transformed(Ro, Rd);
         bool isintersect = object->intersect(r_transformed, h, tmin);
         if (isintersect)
         {
             Vec3f normal = h.getNormal();
-            // Matrix mm = q.front();
-            // q.pop();
-            // mm.TransformDirection(normal);
-            cp.TransformDirection(normal);
+            Matrix mm = q.front();
+            q.pop();
+            mm.TransformDirection(normal);
+            // cp.TransformDirection(normal);
             normal.Normalize();
             h.set(h.getT(), h.getMaterial(), normal, r);
         }
         else
         {
-            // while (!q.empty())
-            //     q.pop();
+            while (!q.empty())
+                q.pop();
         }
 
         return isintersect;
