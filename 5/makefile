@@ -9,10 +9,10 @@ FLAG += -lopengl32
 all: $(EXE)
 
 $(EXE): $(OBJ)
-	g++ $^ -o $@ $(FLAG)
+	g++ $^ -o $@ $(FLAG) -g
 
 %.o: $(SRC_DIR)%.cpp
-	g++ -c $<
+	g++ -c $< -g
 
 .PHONY: clean
 clean:
