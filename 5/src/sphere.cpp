@@ -58,7 +58,7 @@ void Sphere::paint() const
 	glBegin(GL_QUADS);
 	for (float iPhi = -R2D(90) + d_phi; iPhi < R2D(90); iPhi += 2 * d_phi)
 	{
-		for (float iTheta = 0; iTheta < R2D(360); iTheta += 2 * d_theta)
+		for (float iTheta = 0; iTheta < R2D(360) - d_theta; iTheta += 2 * d_theta)
 		{
 			float cos_theta_p = cos(iTheta + d_theta);
 			float cos_theta_m = cos(iTheta - d_theta);
