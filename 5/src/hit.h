@@ -6,46 +6,24 @@
 
 class Material;
 
-// ====================================================================
-// ====================================================================
-
 class Hit
 {
 
 public:
 	// CONSTRUCTOR & DESTRUCTOR
-	Hit() { material = NULL; }
-	Hit(float _t, Material *m, Vec3f n, const Ray &ray)
-	{
-		t = _t;
-		material = m;
-		normal = n;
-		intersectionPoint = ray.pointAtParameter(t);
-	}
-	Hit(const Hit &h)
-	{
-		t = h.t;
-		material = h.material;
-		normal = h.normal;
-		intersectionPoint = h.intersectionPoint;
-	}
-	~Hit() {}
+	Hit();
+	Hit(float _t, Material *m, Vec3f n, const Ray &ray);
+	Hit(const Hit &h);
+	~Hit();
 
 	// ACCESSORS
-	float getT() const { return t; }
-	Material *getMaterial() const { return material; }
-	Vec3f getNormal() const { return normal; }
-	Vec3f getIntersectionPoint() const { return intersectionPoint; }
+	float getT() const;
+	Material *getMaterial() const;
+	Vec3f getNormal() const;
+	Vec3f getIntersectionPoint() const;
 
 	// MODIFIER
-	void set(float _t, Material *m, Vec3f &n, const Ray &ray)
-	{
-		t = _t;
-		material = m;
-		normal = n;
-		normal.Normalize();
-		intersectionPoint = ray.pointAtParameter(t);
-	}
+	void set(float _t, Material *m, Vec3f &n, const Ray &ray);
 
 private:
 	// REPRESENTATION
@@ -55,12 +33,6 @@ private:
 	Vec3f intersectionPoint;
 };
 
-inline ostream &operator<<(ostream &os, const Hit &h)
-{
-	os << "Hit <" << h.getT() << ", " << h.getNormal() << ">";
-	return os;
-}
-// ====================================================================
-// ====================================================================
+inline ostream &operator<<(ostream &os, const Hit &h);
 
 #endif

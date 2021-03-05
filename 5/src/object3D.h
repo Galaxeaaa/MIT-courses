@@ -12,12 +12,16 @@
 class Object3D
 {
 public:
-    Object3D() { m = NULL; }
+    Object3D() { m = nullptr; bbox = nullptr; }
     Object3D(const Material *m) : m(m->clone()) {}
     Object3D(const Material &m) : m(m.clone()) {}
     ~Object3D() { delete m; }
     virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
     virtual void paint() const = 0;
+    BoundingBox* getBoundingBox()
+    {
+        return bbox;
+    }
 
 protected:
     Material *m;

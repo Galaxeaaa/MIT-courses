@@ -28,7 +28,7 @@
             "request": "launch",//配置文件的请求类型，有launch和attach两种，具体看官方文档
             "targetArchitecture": "x86_64", //硬件内核架构，为64bit，如图设置
             "program": "${workspaceFolder}/debug.exe",//可执行文件的路径和文件名称
-            "args": [ "-input", "scene4_06_transparent_bars.txt", "-size", "200", "200", "-output", "output4_06d.tga", "-shadows", "-bounces", "3", "-weight", "0.01", "-gui", "-shade_back"],//主函数调用时传入的参数,,
+            "args": [ "-input", "scene4_05_transparent_bar.txt", "-size", "200", "200", "-output", "output4_05.tga", "-shadows", "-bounces", "10", "-weight", "0.01", "-shade_back", "-gui"],//主函数调用时传入的参数,,
             "stopAtEntry": false,//设为true时程序将暂停在程序入口处
             "cwd": "${workspaceFolder}",//调试时的工作目录
             "environment": [],//不知道干嘛的
