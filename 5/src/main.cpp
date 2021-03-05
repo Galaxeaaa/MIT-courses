@@ -11,6 +11,7 @@
 #include "scene_parser.h"
 #include "sphere.h"
 #include <fstream>
+#include <io.h>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -235,6 +236,9 @@ int main(int argc, char *argv[])
 
     FILE *infile;
     infile = fopen(input_filename, "r");
+    // Check if output_file/ exists. If not, make directory.
+    if (access("output_file/", F_OK) != 0)
+        system("md output_file");
 
     sp = new SceneParser(input_filename);
     renderFunc();
