@@ -1,6 +1,0 @@
-{
-    "code-runner.executorMap": {
-        "c": "cd $dir && gcc $fileName -o $fileNameWithoutExt.exe -g -O2 -static-libgcc -std=c11 && $dir$fileNameWithoutExt",
-        "cpp": "cd $dir && g++ $fileName image.cpp matrix.cpp ifs.cpp -o $fileNameWithoutExt.exe -g -O2 -static-libgcc -std=c++17 && $dir$fileNameWithoutExt"
-    } // 控制Code Runner命令；未注释的仅适用于PowerShell（Win10默认），文件名中有空格也可以编译运行；注释掉的适用于cmd（win7默认），也适用于PS，文件名中有空格时无法运行
-}
