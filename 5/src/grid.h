@@ -1,6 +1,7 @@
 #ifndef _GRID_H_
 #define _GRID_H_
 
+#include "group.h"
 #include "hit.h"
 #include "object3D.h"
 
@@ -15,12 +16,14 @@ public:
 	int getNy();
 	int getNz();
 	statetype &getState(int x, int y, int z);
+	void setGroup();
 	virtual bool intersect(const Ray &r, Hit &h, float tmin);
 	virtual void paint() const;
 
 private:
 	statetype *state;
 	int nx, ny, nz;
+	Group *g;
 };
 
 #endif

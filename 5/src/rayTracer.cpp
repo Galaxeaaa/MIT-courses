@@ -31,23 +31,27 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
         RayTree::AddShadowSegment(n, 0, 1);
         Vec3f color = s->getAmbientLight() * hit.getMaterial()->getDiffuseColor();
         /* Shadowing */
-        if (shadows)
-        {
-            for (int i = 0; i < s->getNumLights(); i++)
-            {
-                Vec3f dir_to_light, light_color;
-                float dist_to_light;
-                s->getLight(i)->getIllumination(hit.getIntersectionPoint(), dir_to_light, light_color, dist_to_light);
-                Ray ray2(hit.getIntersectionPoint(), dir_to_light);
-                Hit hit2(dist_to_light, NULL, Vec3f(), ray2);
-                s->getGroup()->intersect(ray2, hit2, EPSILON); // CAN BE ACCELERATED
-                if (hit2.getT() == dist_to_light)
-                {
-                    color += hit.getMaterial()->Shade(ray, hit, dir_to_light, light_color);
-                }
-                // RayTree::AddShadowSegment(ray2, 0, hit2.getT());
-            }
-        }
+		for (int i = 0; i < s->getNumLights(); i++)
+		{
+			Vec3f dir_to_light, light_color;
+			float dist_to_light;
+			s->getLight(i)->getIllumination(hit.getIntersectionPoint(), dir_to_light, light_color, dist_to_light);
+			Ray ray2(hit.getIntersectionPoint(), dir_to_light);
+			Hit hit2(dist_to_light, NULL, Vec3f(), ray2);
+			if (shadows)
+			{
+				s->getGroup()->intersect(ray2, hit2, EPSILON); // CAN BE ACCELERATED
+				if (hit2.getT() == dist_to_light)
+				{
+					color += hit.getMaterial()->Shade(ray, hit, dir_to_light, light_color);
+				}
+			}
+			else
+			{
+				color += hit.getMaterial()->Shade(ray, hit, dir_to_light, light_color);
+			}
+			// RayTree::AddShadowSegment(ray2, 0, hit2.getT());
+		}
         if (bounces > 0)
         {
             /* Reflecting */
@@ -83,6 +87,10 @@ Vec3f RayTracer::traceRay(Ray &ray, float tmin, int bounces, float weight, float
                 }
             }
         }
+        // else
+        // {
+        // 	color += ((PhongMaterial *)hit.getMaterial())->Shade(ray, hit, );
+        // }
 
         if (bounces == max_bounces)
             RayTree::SetMainSegment(ray, 0, hit.getT());

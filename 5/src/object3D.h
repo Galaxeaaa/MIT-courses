@@ -28,6 +28,10 @@ public:
 	{
 		return bbox;
 	}
+	void setBoundingBox(BoundingBox *bbx)
+	{
+		bbox = bbx;
+	}
 	virtual void insertIntoGrid(Grid *g, Matrix *m)
 	{
 	}

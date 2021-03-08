@@ -110,20 +110,22 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m)
 	float dx = (max.x() - min.x()) / nx;
 	float dy = (max.y() - min.y()) / ny;
 	float dz = (max.z() - min.z()) / nz;
-	float half_diag = sqrt(dx * dx + dy * dy + dz * dz);
+	float half_diag = sqrt(dx * dx + dy * dy + dz * dz) / 2;
 	for (int x = 0; x < nx; x++)
 	{
-		for (int y = 0; y < ny; x++)
+		for (int y = 0; y < ny; y++)
 		{
-			for (int z = 0; z < nz; x++)
+			for (int z = 0; z < nz; z++)
 			{
-				Vec3f grid_center(((x + 0.5) * dx),
-									((y + 0.5) * dy),
-									((z + 0.5) * dz));
+				Vec3f grid_center = min + Vec3f(((x + 0.5) * dx),
+												((y + 0.5) * dy),
+												((z + 0.5) * dz));
 				if ((grid_center - center).Length() <= half_diag + radius)
 				{
 					g->getState(x, y, z) = true;
 				}	
+				else
+					g->getState(x, y, z) = false;
 			}
 		}
 	}

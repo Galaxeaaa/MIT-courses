@@ -70,7 +70,7 @@ void renderFunc()
 
 	if (visualize_grid)
 	{
-	
+		sp->getGroup()->addObject(sp->getGroup()->getN(), g);
 	}
 
     // Camera
@@ -268,14 +268,12 @@ int main(int argc, char *argv[])
 
 	if (grid)
 	{
-		BoundingBox *gb = g->getBoundingBox();
-		for (int i = 0; i < sp->getGroup()->getN(); i++)
-		{
-			gb->Extend(sp->getGroup()->getBoundingBox());
-		}
+		BoundingBox *gb = sp->getGroup()->getBoundingBox();
+        g = new Grid(gb, nx, ny, nz);
+		Matrix *m = new Matrix();
+		sp->getGroup()->insertIntoGrid(g, m);
+		g->setGroup();
 	}
-
-    renderFunc();
 
     if (gui)
     {
