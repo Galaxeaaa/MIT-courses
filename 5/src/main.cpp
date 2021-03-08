@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 		}
         else
         {
-            printf("whoops error with command line argument %d: '%s'\n", i, argv[i]);
+            std::cout << "whoops error with command line argument" << i << ": \'" << argv[i] << std::endl;
             assert(0);
         }
     }
