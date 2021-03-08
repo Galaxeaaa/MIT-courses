@@ -11,6 +11,7 @@ public:
     virtual bool intersect(const Ray &r, Hit &h, float tmin);
     void addObject(int index, Object3D *obj);
     virtual void paint() const;
+	virtual void insertIntoGrid(Grid *g, Matrix *m);
 
 protected:
     int n;

@@ -1,6 +1,7 @@
 #ifndef _SPHERE_H_
 #define _SPHERE_H_
 
+#include "grid.h"
 #include "object3D.h"
 #include <math.h>
 
@@ -15,6 +16,7 @@ public:
 
 	virtual bool intersect(const Ray &r, Hit &h, float tmin);
 	virtual void paint() const;
+	virtual void insertIntoGrid(Grid *g, Matrix *m);
 
 protected:
 	Vec3f center;

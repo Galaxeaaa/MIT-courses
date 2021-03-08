@@ -1,5 +1,6 @@
 #include "glCanvas.h"
 #include "camera.h"
+#include "grid.h"
 #include "group.h"
 #include "light.h"
 #include "rayTree.h"
@@ -8,6 +9,9 @@
 // Included files for OpenGL Rendering
 #include <GL/gl.h>
 #include <GL/glut.h>
+
+extern bool visualize_grid;
+extern Grid *g;
 
 // ========================================================
 
@@ -151,6 +155,11 @@ void GLCanvas::display(void)
 	glDisable(GL_BLEND);
 
 #endif
+
+	if (visualize_grid)
+	{
+		g->paint();
+	}
 
 	// Draw the ray tree
 	glDisable(GL_LIGHTING);

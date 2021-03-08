@@ -9,23 +9,32 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+class Grid;
+
 class Object3D
 {
 public:
-    Object3D() { m = nullptr; bbox = nullptr; }
-    Object3D(const Material *m) : m(m->clone()) {}
-    Object3D(const Material &m) : m(m.clone()) {}
-    ~Object3D() { delete m; }
-    virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
-    virtual void paint() const = 0;
-    BoundingBox* getBoundingBox()
-    {
-        return bbox;
-    }
+	Object3D()
+	{
+		m = nullptr;
+		bbox = nullptr;
+	}
+	Object3D(const Material *m) : m(m->clone()) {}
+	Object3D(const Material &m) : m(m.clone()) {}
+	~Object3D() { delete m; }
+	virtual bool intersect(const Ray &r, Hit &h, float tmin) = 0;
+	virtual void paint() const = 0;
+	BoundingBox *getBoundingBox()
+	{
+		return bbox;
+	}
+	virtual void insertIntoGrid(Grid *g, Matrix *m)
+	{
+	}
 
 protected:
-    Material *m;
-    BoundingBox *bbox;
+	Material *m;
+	BoundingBox *bbox;
 };
 
 #endif
