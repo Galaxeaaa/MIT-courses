@@ -1,5 +1,4 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+#pragma once_
 #define INF 10e8
 
 #include "ray.h"
@@ -65,5 +64,3 @@ protected:
     Vec3f center, direction, up;
     float tmin, angle_radians;
 };
-
-#endif

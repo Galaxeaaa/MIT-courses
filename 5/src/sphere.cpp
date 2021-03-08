@@ -99,3 +99,32 @@ void Sphere::paint() const
 	// glutSolidSphere(radius, 32, 32);
 	glPopMatrix();
 }
+
+void Sphere::insertIntoGrid(Grid *g, Matrix *m)
+{
+	Vec3f min = g->getBoundingBox()->getMin();
+	Vec3f max = g->getBoundingBox()->getMax();
+	int nx = g->getNx();
+	int ny = g->getNy();
+	int nz = g->getNz();
+	float dx = (max.x() - min.x()) / nx;
+	float dy = (max.y() - min.y()) / ny;
+	float dz = (max.z() - min.z()) / nz;
+	float half_diag = sqrt(dx * dx + dy * dy + dz * dz);
+	for (int x = 0; x < nx; x++)
+	{
+		for (int y = 0; y < ny; x++)
+		{
+			for (int z = 0; z < nz; x++)
+			{
+				Vec3f grid_center(((x + 0.5) * dx),
+									((y + 0.5) * dy),
+									((z + 0.5) * dz));
+				if ((grid_center - center).Length() <= half_diag + radius)
+				{
+					g->getState(x, y, z) = true;
+				}	
+			}
+		}
+	}
+}

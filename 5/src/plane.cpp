@@ -49,3 +49,8 @@ void Plane::paint() const
 
 	glPopMatrix();
 }
+
+void Plane::insertIntoGrid(Grid *g, Matrix *m)
+{
+
+}

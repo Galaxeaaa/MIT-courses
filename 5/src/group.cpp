@@ -39,3 +39,11 @@ void Group::paint() const
 		instances[i]->paint();
 	}
 }
+
+void Group::insertIntoGrid(Grid *g, Matrix *m)
+{
+	for (int i = 0; i < n; i++)
+	{
+		instances[i]->insertIntoGrid(g, m);
+	}
+}

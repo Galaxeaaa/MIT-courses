@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <math.h>
 
-PhongMaterial::PhongMaterial::PhongMaterial(const Vec3f &diffuseColor,
+PhongMaterial::PhongMaterial(const Vec3f &diffuseColor,
                                             const Vec3f &specularColor,
                                             float exponent,
                                             const Vec3f &reflectiveColor,

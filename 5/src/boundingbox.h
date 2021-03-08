@@ -1,5 +1,4 @@
-#ifndef _BOUNDING_BOX_H_
-#define _BOUNDING_BOX_H_
+#pragma once
 
 #include "vectors.h"
 
@@ -77,8 +76,3 @@ private:
 	Vec3f min;
 	Vec3f max;
 };
-
-// ====================================================================
-// ====================================================================
-
-#endif

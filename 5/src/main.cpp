@@ -48,6 +48,10 @@ bool shadows = false;
 int bounces = 0;
 float cutoff_weight = 0;
 SceneParser *sp;
+/* Grid */
+int nx = 0, ny = 0, nz = 0;
+bool visualize_grid = false;
+Grid *g = nullptr;
 
 void renderFunc()
 {
@@ -62,6 +66,11 @@ void renderFunc()
     Vec3f black(0.0f, 0.0f, 0.0f);
     Group *group = sp->getGroup();
     int nlights = sp->getNumLights();
+
+	if (visualize_grid)
+	{
+	
+	}
 
     // Camera
     // OrthographicCamera
@@ -227,6 +236,20 @@ int main(int argc, char *argv[])
             i++;
             cutoff_weight = atof(argv[i]);
         }
+		else if (!strcmp(argv[i], "-grid"))
+		{
+			i++;
+			nx = atoi(argv[i]);
+			i++;
+			ny = atoi(argv[i]);
+			i++;
+			nz = atoi(argv[i]);
+			g = new Grid(nullptr, nx, ny, nz);
+		}
+		else if (!strcmp(argv[i], "-visualize_grid"))
+		{
+			visualize_grid = true;
+		}
         else
         {
             printf("whoops error with command line argument %d: '%s'\n", i, argv[i]);
