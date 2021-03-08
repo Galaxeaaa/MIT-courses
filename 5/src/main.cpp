@@ -50,6 +50,7 @@ float cutoff_weight = 0;
 SceneParser *sp;
 /* Grid */
 int nx = 0, ny = 0, nz = 0;
+bool grid = false;
 bool visualize_grid = false;
 Grid *g = nullptr;
 
@@ -244,7 +245,7 @@ int main(int argc, char *argv[])
 			ny = atoi(argv[i]);
 			i++;
 			nz = atoi(argv[i]);
-			g = new Grid(nullptr, nx, ny, nz);
+			grid = true;
 		}
 		else if (!strcmp(argv[i], "-visualize_grid"))
 		{
@@ -264,6 +265,16 @@ int main(int argc, char *argv[])
         system("md output_file");
 
     sp = new SceneParser(input_filename);
+
+	if (grid)
+	{
+		BoundingBox *gb = g->getBoundingBox();
+		for (int i = 0; i < sp->getGroup()->getN(); i++)
+		{
+			gb->Extend(sp->getGroup()->getBoundingBox());
+		}
+	}
+
     renderFunc();
 
     if (gui)
