@@ -45,7 +45,8 @@ Vec3f PhongMaterial::Shade(const Ray &ray, const Hit &hit, const Vec3f &dirToLig
 
 Material *PhongMaterial::clone() const
 {
-    return new PhongMaterial(*this);
+	PhongMaterial *test;
+    return (test = new PhongMaterial(*this));
 }
 
 void PhongMaterial::glSetMaterial(void) const

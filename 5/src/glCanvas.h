@@ -11,9 +11,14 @@
 #ifndef _GL_CANVAS_H_
 #define _GL_CANVAS_H_
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <stdlib.h>
 
 class SceneParser;
+class Grid;
 
 // ====================================================================
 // OPTIONAL: 3 pass rendering to fix the specular highlight
@@ -21,7 +26,7 @@ class SceneParser;
 
 //   0: don't fix
 //   1: do fix
-#define SPECULAR_FIX 1
+#define SPECULAR_FIX 0
 
 // ====================================================================
 
@@ -40,13 +45,18 @@ private:
 	// A pointer to the global SceneParser
 	static SceneParser *scene;
 
+	// A pointer to the grid
+	static Grid *grid;
+	static bool visualize_grid;
+	static int visualize_grid_march;
+
+	// Helper function for the display routine
+	static void drawAxes(void);
+
 	// State of the mouse cursor
 	static int mouseButton;
 	static int mouseX;
 	static int mouseY;
-
-	// Helper function for the display routine
-	static void drawAxes(void);
 
 	// Callback functions for mouse and keyboard events
 	static void display(void);
@@ -68,7 +78,10 @@ public:
 	// Note that this function will not return but can be
 	// terminated by calling 'exit(0)'
 
-	void initialize(SceneParser *_scene, void (*_renderFunction)(void), void (*_traceRayFunction)(float, float));
+	void initialize(SceneParser *_scene,
+					void (*_renderFunction)(void),
+					void (*_traceRayFunction)(float, float),
+					Grid *_grid, bool _visualize_grid);
 };
 
 // ====================================================================

@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
     FILE *infile;
     infile = fopen(input_filename, "r");
     // Check if output_file/ exists. If not, make directory.
-    if (access("output_file/", F_OK) != 0)
+    if (access("output_file/", 0) != 0)
         system("md output_file");
 
     sp = new SceneParser(input_filename);
@@ -272,14 +272,13 @@ int main(int argc, char *argv[])
         g = new Grid(gb, nx, ny, nz);
 		Matrix *m = new Matrix();
 		sp->getGroup()->insertIntoGrid(g, m);
-		g->setGroup();
 	}
 
     if (gui)
     {
         glutInit(&argc, argv);
         GLCanvas canvas;
-        canvas.initialize(sp, renderFunc, traceRayFunc);
+        canvas.initialize(sp, renderFunc, traceRayFunc, g, visualize_grid);
     }
     // OrthographicCamera *camera = (OrthographicCamera *)sp->getCamera();
 

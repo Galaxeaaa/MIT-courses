@@ -122,11 +122,10 @@ void Sphere::insertIntoGrid(Grid *g, Matrix *m)
 												((z + 0.5) * dz));
 				if ((grid_center - center).Length() <= half_diag + radius)
 				{
-					g->getState(x, y, z) = true;
+					g->setState(x, y, z, true);
 				}	
-				else
-					g->getState(x, y, z) = false;
 			}
 		}
 	}
+	g->setMaterial(this->m);
 }
