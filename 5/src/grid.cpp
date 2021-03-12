@@ -1,12 +1,13 @@
 #include "grid.h"
 #include "group.h"
+#include "rayTree.h"
 #include "triangle.h"
 
 Grid::Grid(BoundingBox *bb, int nx, int ny, int nz) : nx(nx), ny(ny), nz(nz)
 {
 	bbox = bb;
 	state = new statetype[nx * ny * nz];
-	memset(state, false, sizeof(statetype));
+	memset(state, false, nx * ny * nz * sizeof(statetype));
 }
 
 Grid::~Grid()
@@ -29,6 +30,11 @@ int Grid::getNz()
 	return nz;
 }
 
+bool Grid::isInBox(int x, int y, int z) const
+{
+	return (x >= 0 && x < nx && y >= 0 && y < ny && z >= 0 && z < nz);
+}
+
 statetype &Grid::getState(int x, int y, int z) const
 {
 	return state[x * ny * nz + y * nz + z];
@@ -41,66 +47,6 @@ void Grid::setState(int x, int y, int z, statetype s)
 
 bool Grid::intersect(const Ray &r, Hit &h, float tmin)
 {
-	/* Intersect with BoundingBox first */
-	Vec3f bmin(bbox->getMin());
-	Vec3f bmax(bbox->getMax());
-	Vec3f Ro = r.getOrigin();
-	Vec3f Rd = r.getDirection();
-	float t_near = -10e8, t_far = 10e8;
-
-	if (Rd.x() == 0 && Ro.x() < bmin.x() && Ro.x() > bmax.x())
-		return false; // No Intersection
-	if (Rd.y() == 0 && Ro.y() < bmin.y() && Ro.y() > bmax.y())
-		return false; // No Intersection
-	if (Rd.z() == 0 && Ro.z() < bmin.z() && Ro.z() > bmax.z())
-		return false; // No Intersection
-
-	float t1, t2, tmp;
-	/* Intersect on x-axis */
-	t1 = (bmin.x() - Ro.x()) / Rd.x();
-	t2 = (bmax.x() - Ro.x()) / Rd.x();
-	if (t1 > t2)
-	{
-		tmp = t1;
-		t1 = t2;
-		t2 = tmp;
-	}
-	if (t1 > t_near)
-		t_near = t1;
-	if (t2 < t_far)
-		t_far = t2;
-	/* Intersect on y-axis */
-	t1 = (bmin.y() - Ro.y()) / Rd.y();
-	t2 = (bmax.y() - Ro.y()) / Rd.y();
-	if (t1 > t2)
-	{
-		tmp = t1;
-		t1 = t2;
-		t2 = tmp;
-	}
-	if (t1 > t_near)
-		t_near = t1;
-	if (t2 < t_far)
-		t_far = t2;
-	/* Intersect on z-axis */
-	t1 = (bmin.z() - Ro.z()) / Rd.z();
-	t2 = (bmax.z() - Ro.z()) / Rd.z();
-	if (t1 > t2)
-	{
-		tmp = t1;
-		t1 = t2;
-		t2 = tmp;
-	}
-	if (t1 > t_near)
-		t_near = t1;
-	if (t2 < t_far)
-		t_far = t2;
-
-	if (t_near > t_far)
-		return false;
-	if (t_far < tmin)
-		return false;
-
 	/* Intersection with BoundingBox: True */
 	MarchingInfo mi;
 	initializeRayMarch(mi, r, tmin);
@@ -109,23 +55,40 @@ bool Grid::intersect(const Ray &r, Hit &h, float tmin)
 		return false;
 	}
 
-	Vec3f n;
-	switch(mi.face)
+	Vec3f min = bbox->getMin();
+	Vec3f max = bbox->getMax();
+	float dx = (max.x() - min.x()) / nx;
+	float dy = (max.y() - min.y()) / ny;
+	float dz = (max.z() - min.z()) / nz;
+
+	while (1)
 	{
-		case 0: 
-			n.Set(-mi.sign_x, 0, 0);
-			break;
-		case 1: 
-			n.Set(0, -mi.sign_y, 0);
-			break;
-		case 2: 
-			n.Set(0, 0, -mi.sign_z);
-			break;
+		if (!isInBox(mi.i, mi.j, mi.k))
+		{
+			return false;
+		}
+		if (getState(mi.i, mi.j, mi.k) == true)
+		{
+			Vec3f n;
+			switch (mi.face)
+			{
+			case 0:
+				n.Set(-mi.sign_x, 0, 0);
+				break;
+			case 1:
+				n.Set(0, -mi.sign_y, 0);
+				break;
+			case 2:
+				n.Set(0, 0, -mi.sign_z);
+				break;
+			}
+			h.set(mi.tmin, m, n, r);
+			return true;
+		}
+		mi.nextCell();
 	}
 
-	h.set(mi.tmin, m, n, r);
-
-	return true;
+	return false;
 }
 
 void Grid::paint() const
@@ -173,7 +136,6 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 {
 	Vec3f Ro = r.getOrigin();
 	Vec3f Rd = r.getDirection();
-	// Ray Origin in Box
 	mi.tmin = 10e8;
 	mi.d_tx = abs(((bbox->getMax().x() - bbox->getMin().x()) / nx) * (Rd.Length() / Rd.x()));
 	mi.d_ty = abs(((bbox->getMax().y() - bbox->getMin().y()) / ny) * (Rd.Length() / Rd.y()));
@@ -182,9 +144,63 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 	mi.sign_y = Rd.y() > 0 ? 1 : (Rd.y() < 0 ? -1 : 0);
 	mi.sign_z = Rd.z() > 0 ? 1 : (Rd.z() < 0 ? -1 : 0);
 
-	/* Apply Ray-Box Intersection to decide the first cell. */
-	Vec3f bmin = bbox->getMin();
-	Vec3f bmax = bbox->getMax();
+	/* 1. Intersect with BoundingBox first */
+	Vec3f bmin(bbox->getMin());
+	Vec3f bmax(bbox->getMax());
+	float t_near = -10e8, t_far = 10e8;
+	if (Rd.x() == 0 && Ro.x() < bmin.x() && Ro.x() > bmax.x())
+		return; // No Intersection
+	if (Rd.y() == 0 && Ro.y() < bmin.y() && Ro.y() > bmax.y())
+		return; // No Intersection
+	if (Rd.z() == 0 && Ro.z() < bmin.z() && Ro.z() > bmax.z())
+		return; // No Intersection
+	float t1, t2, tmp;
+	/* - Intersect on x-axis */
+	t1 = (bmin.x() - Ro.x()) / Rd.x();
+	t2 = (bmax.x() - Ro.x()) / Rd.x();
+	if (t1 > t2)
+	{
+		tmp = t1;
+		t1 = t2;
+		t2 = tmp;
+	}
+	if (t1 > t_near)
+		t_near = t1;
+	if (t2 < t_far)
+		t_far = t2;
+	/* - Intersect on y-axis */
+	t1 = (bmin.y() - Ro.y()) / Rd.y();
+	t2 = (bmax.y() - Ro.y()) / Rd.y();
+	if (t1 > t2)
+	{
+		tmp = t1;
+		t1 = t2;
+		t2 = tmp;
+	}
+	if (t1 > t_near)
+		t_near = t1;
+	if (t2 < t_far)
+		t_far = t2;
+	/* - Intersect on z-axis */
+	t1 = (bmin.z() - Ro.z()) / Rd.z();
+	t2 = (bmax.z() - Ro.z()) / Rd.z();
+	if (t1 > t2)
+	{
+		tmp = t1;
+		t1 = t2;
+		t2 = tmp;
+	}
+	if (t1 > t_near)
+		t_near = t1;
+	if (t2 < t_far)
+		t_far = t2;
+
+	if (t_near > t_far)
+		return;
+	if (t_far < tmin)
+		return;
+
+	/* 2. Apply Ray-Box Intersection to decide the first cell. */
 	float dx = (bmax.x() - bmin.x()) / nx;
 	float dy = (bmax.y() - bmin.y()) / ny;
 	float dz = (bmax.z() - bmin.z()) / nz;
@@ -195,15 +211,14 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 		{
 			for (z = 0; z < nz; z++)
 			{
-				if (getState(x, y, z) == false)
-					continue;
-				/* Cell range */
+				// if (getState(x, y, z) == false)
+				//	continue;
+
 				Vec3f cmin(bmin + Vec3f(x * dx, y * dy, z * dz));
 				Vec3f cmax(bmin + Vec3f((x + 1) * dx, (y + 1) * dy, (z + 1) * dz));
 				float t_near = -10e8, t_far = 10e8;
 				float cddt_next_x, cddt_next_y, cddt_next_z;
 				int far_face, near_face;
-
 				/* Ray-Box Intersection */
 				if (Rd.x() == 0 && Ro.x() < cmin.x() && Ro.x() > cmax.x())
 					continue; // No Intersection
@@ -211,9 +226,8 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 					continue; // No Intersection
 				if (Rd.z() == 0 && Ro.z() < cmin.z() && Ro.z() > cmax.z())
 					continue; // No Intersection
-
 				float t1, t2, tmp;
-				/* Intersect on x-axis */
+				/* - Intersect on x-axis */
 				t1 = (cmin.x() - Ro.x()) / Rd.x();
 				t2 = (cmax.x() - Ro.x()) / Rd.x();
 				if (t1 > t2)
@@ -233,7 +247,7 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 					t_far = t2;
 					far_face = 0;
 				}
-				/* Intersect on y-axis */
+				/* - Intersect on y-axis */
 				t1 = (cmin.y() - Ro.y()) / Rd.y();
 				t2 = (cmax.y() - Ro.y()) / Rd.y();
 				if (t1 > t2)
@@ -253,7 +267,7 @@ void Grid::initializeRayMarch(MarchingInfo &mi, const Ray &r, float tmin) const
 					t_far = t2;
 					far_face = 1;
 				}
-				/* Intersect on z-axis */
+				/* - Intersect on z-axis */
 				t1 = (cmin.z() - Ro.z()) / Rd.z();
 				t2 = (cmax.z() - Ro.z()) / Rd.z();
 				if (t1 > t2)

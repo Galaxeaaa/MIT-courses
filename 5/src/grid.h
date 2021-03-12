@@ -16,6 +16,7 @@ public:
 	int getNx();
 	int getNy();
 	int getNz();
+	bool isInBox(int x, int y, int z) const;
 	statetype &getState(int x, int y, int z) const;
 	void setState(int x, int y, int z, statetype s);
 	virtual bool intersect(const Ray &r, Hit &h, float tmin);
